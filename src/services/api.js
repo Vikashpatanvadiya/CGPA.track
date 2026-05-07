@@ -1,5 +1,8 @@
-// All requests go through Vite's proxy → Express on :3001
-const BASE = '/api';
+// In production, VITE_API_URL points to the Render backend
+// In dev, Vite proxy handles /api → localhost:3001
+const BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api';
 
 function getToken() { return localStorage.getItem('cgpa_token') || ''; }
 
