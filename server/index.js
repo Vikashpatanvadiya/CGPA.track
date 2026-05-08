@@ -17,7 +17,8 @@ const PORT = process.env.PORT || 3001;
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:4173',
-  process.env.FRONTEND_URL, // set this on Render
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL?.replace(/\/$/, ''), // strip trailing slash
 ].filter(Boolean);
 
 app.use(cors({
@@ -28,6 +29,7 @@ app.use(cors({
   },
   credentials: true,
 }));
+app.options('*', cors()); // handle preflight for all routes
 app.use(express.json());
 
 app.use('/api/auth',      authRouter);
