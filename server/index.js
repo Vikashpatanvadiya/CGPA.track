@@ -17,19 +17,19 @@ const PORT = process.env.PORT || 3001;
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:4173',
-  process.env.FRONTEND_URL,
-  process.env.FRONTEND_URL?.replace(/\/$/, ''), // strip trailing slash
+  process.env.FRONTEND_URL?.replace(/\/$/, ''),
 ].filter(Boolean);
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, cb) => {
-    // allow requests with no origin (curl, mobile apps)
     if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
     cb(new Error('Not allowed by CORS'));
   },
   credentials: true,
-}));
-app.options('*', cors()); // handle preflight for all routes
+};
+
+app.options('*', cors(corsOptions)); // preflight must come first
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use('/api/auth',      authRouter);
@@ -39,3 +39,9 @@ app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 initDB()
   .then(() => app.listen(PORT, () => console.log(`🚀 API running at http://localhost:${PORT}`)))
   .catch(err => { console.error('Failed to init DB:', err.message); process.exit(1); });
+
+// Global error handler — always return JSON
+app.use((err, req, res, next) => {
+  console.error(err.message);
+  res.status(500).json({ error: err.message || 'Internal server error' });
+});
