@@ -10,8 +10,8 @@ export function gradePoints(grade) {
 export function computeSGPA(semester) {
   // Repeat courses override originals by course code
   const effective = {};
-  semester.courses.forEach(c => { effective[c.code] = c; });
-  semester.repeatCourses.forEach(c => { effective[c.code] = c; });
+  (semester.courses || []).forEach(c => { effective[c.code] = c; });
+  (semester.repeatCourses || []).forEach(c => { effective[c.code] = c; });
 
   let pts = 0, creditsUsed = 0, earned = 0, registered = 0;
 
@@ -56,7 +56,7 @@ export function computeCGPA(semesters) {
 /** Grade distribution for a semester */
 export function gradeDistribution(semester) {
   const dist = {};
-  [...semester.courses, ...semester.repeatCourses].forEach(c => {
+  [...(semester.courses || []), ...(semester.repeatCourses || [])].forEach(c => {
     dist[c.grade] = (dist[c.grade] || 0) + 1;
   });
   return Object.entries(dist).map(([grade, count]) => ({ grade, count }));

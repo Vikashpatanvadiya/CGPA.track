@@ -4,7 +4,7 @@ import { SGPATrendChart, CreditsBarChart, CGPAProgressBar } from './Charts';
 export default function CGPASummary({ semesters }) {
   const { cgpa, totalPts, totalEarned, totalReg } = computeCGPA(semesters);
   const perf = performanceLabel(cgpa);
-  const bestSGPA = Math.max(...semesters.map(s => computeSGPA(s).sgpa));
+  const bestSGPA = semesters.length > 0 ? Math.max(...semesters.map(s => computeSGPA(s).sgpa)) : 0;
 
   const topStats = [
     { label: 'CGPA',               value: cgpa.toFixed(2), accent: true },
