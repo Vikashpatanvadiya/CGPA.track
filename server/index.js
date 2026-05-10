@@ -28,7 +28,6 @@ const corsOptions = {
   credentials: true,
 };
 
-app.options('(.*)', cors(corsOptions)); // preflight must come first (Express 5 syntax)
 app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -36,12 +35,12 @@ app.use('/api/auth',      authRouter);
 app.use('/api/semesters', semestersRouter);
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
-initDB()
-  .then(() => app.listen(PORT, () => console.log(`🚀 API running at http://localhost:${PORT}`)))
-  .catch(err => { console.error('Failed to init DB:', err.message); process.exit(1); });
-
 // Global error handler — always return JSON
-app.use((err, req, res, next) => {
+app.use((err, _req, res, _next) => {
   console.error(err.message);
   res.status(500).json({ error: err.message || 'Internal server error' });
 });
+
+initDB()
+  .then(() => app.listen(PORT, () => console.log(`🚀 API running at http://localhost:${PORT}`)))
+  .catch(err => { console.error('Failed to init DB:', err.message); process.exit(1); });
