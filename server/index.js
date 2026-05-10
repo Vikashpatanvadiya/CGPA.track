@@ -28,7 +28,7 @@ const corsOptions = {
   credentials: true,
 };
 
-app.options('*', cors(corsOptions)); // preflight must come first
+app.options('(.*)', cors(corsOptions)); // preflight must come first (Express 5 syntax)
 app.use(cors(corsOptions));
 app.use(express.json());
 
