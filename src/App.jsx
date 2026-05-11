@@ -8,6 +8,7 @@ import AuthPage from './components/AuthPage';
 import ShareView from './components/ShareView';
 import { INITIAL_SEMESTERS } from './data/initialData';
 import { fetchSemesters, saveSemesters } from './services/api';
+import React from 'react';
 
 const STORAGE_KEY = 'cgpa_tracker_v1';
 
@@ -25,7 +26,44 @@ function loadUser() {
 export default function App() {
   const shareToken = getShareToken();
   if (shareToken) return <ShareView token={shareToken} />;
-  return <AuthenticatedApp />;
+  return (
+    <ErrorBoundary>
+      <AuthenticatedApp />
+    </ErrorBoundary>
+  );
+}
+
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{
+          minHeight: '100vh', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          fontFamily: 'Inter, system-ui, sans-serif', padding: 24,
+        }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: '#191919', marginBottom: 8 }}>
+            cgpa<span style={{ color: '#999' }}>.track</span>
+          </div>
+          <div style={{ fontSize: 13, color: '#dc2626', marginBottom: 16, textAlign: 'center', maxWidth: 400 }}>
+            Something went wrong: {this.state.error.message}
+          </div>
+          <button
+            onClick={() => { localStorage.clear(); window.location.reload(); }}
+            style={{
+              padding: '8px 20px', background: '#191919', color: '#fff',
+              border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Clear data &amp; reload
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function AuthenticatedApp() {
