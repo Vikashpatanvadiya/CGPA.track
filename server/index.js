@@ -10,6 +10,7 @@ import cors from 'cors';
 import { initDB } from './db.js';
 import authRouter      from './routes/auth.js';
 import semestersRouter from './routes/semesters.js';
+import predictorRouter from './routes/predictor.js';
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -33,6 +34,7 @@ app.use(express.json());
 
 app.use('/api/auth',      authRouter);
 app.use('/api/semesters', semestersRouter);
+app.use('/api/predictor', predictorRouter);
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
 // Global error handler — always return JSON

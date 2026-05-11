@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { uid } from '../utils/gradeUtils';
 import { COURSE_TYPES } from '../data/initialData';
+import { fetchPredictor, savePredictor } from '../services/api';
 
 const THRESHOLDS = [
   { grade: 'A+', points: 10, min: 90,  label: 'Outstanding' },
@@ -250,19 +251,55 @@ function QuickCalc() {
 
 /* ── Main ── */
 export default function GradePredictor() {
-  const [rows, setRows] = useState([emptyRow()]);
+  const [rows,    setRows]    = useState([emptyRow()]);
+  const [saveState, setSaveState] = useState('idle'); // idle | saving | saved | error
+  const saveTimer = useRef(null);
+  const isFirstLoad = useRef(true);
+
+  // Load from DB on mount
+  useEffect(() => {
+    fetchPredictor()
+      .then(data => {
+        if (data && data.length > 0) setRows(data);
+        isFirstLoad.current = false;
+      })
+      .catch(() => { isFirstLoad.current = false; });
+  }, []);
+
+  // Auto-save with 800ms debounce whenever rows change
+  useEffect(() => {
+    if (isFirstLoad.current) return;
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      setSaveState('saving');
+      savePredictor(rows)
+        .then(() => { setSaveState('saved'); setTimeout(() => setSaveState('idle'), 2000); })
+        .catch(() => setSaveState('error'));
+    }, 800);
+    return () => clearTimeout(saveTimer.current);
+  }, [rows]);
 
   const addRow    = () => setRows(p => [...p, emptyRow()]);
   const updateRow = useCallback((id, updated) => setRows(p => p.map(r => r.id === id ? updated : r)), []);
   const deleteRow = useCallback((id) => setRows(p => p.length > 1 ? p.filter(r => r.id !== id) : p), []);
 
+  const statusLabel = { idle: '', saving: 'Saving…', saved: 'Saved ✓', error: 'Save failed' }[saveState];
+  const statusColor = { idle: '', saving: 'var(--text-3)', saved: '#16a34a', error: '#d97706' }[saveState];
+
   return (
     <div>
-      <div style={{ marginBottom: 28 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.4px' }}>Grade Predictor</h2>
-        <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>
-          Enter your mid-sem marks to find out what you need in the end-sem for each grade.
-        </p>
+      <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.4px' }}>Grade Predictor</h2>
+          <p style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>
+            Enter your mid-sem marks to find out what you need in the end-sem for each grade.
+          </p>
+        </div>
+        {statusLabel && (
+          <span style={{ fontSize: 11, color: statusColor, marginTop: 4, transition: 'color 0.3s' }}>
+            {statusLabel}
+          </span>
+        )}
       </div>
 
       <QuickCalc />

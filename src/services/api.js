@@ -53,3 +53,19 @@ export async function fetchSharedSemesters(token) {
   if (!res.ok) throw new Error('Share link not found or expired');
   return res.json();
 }
+
+/* ── Predictor rows (auth required) ── */
+export async function fetchPredictor() {
+  const res = await fetch(`${BASE}/predictor`, { headers: authHeaders() });
+  if (!res.ok) throw new Error('Failed to load predictor');
+  return res.json();
+}
+
+export async function savePredictor(rows) {
+  const res = await fetch(`${BASE}/predictor`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ rows }),
+  });
+  if (!res.ok) throw new Error('Failed to save predictor');
+  return res.json();
+}

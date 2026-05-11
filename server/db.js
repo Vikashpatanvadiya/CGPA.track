@@ -54,5 +54,16 @@ export async function initDB() {
     )
   `;
 
+  // Predictor rows — per user
+  await sql`
+    CREATE TABLE IF NOT EXISTS predictor_rows (
+      id          SERIAL PRIMARY KEY,
+      user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      rows_json   JSONB NOT NULL DEFAULT '[]',
+      updated_at  TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(user_id)
+    )
+  `;
+
   console.log('✅ Database tables ready');
 }
