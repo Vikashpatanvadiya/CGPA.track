@@ -162,6 +162,10 @@ function AuthenticatedApp() {
     setAppReady(false);
   }
 
+  // ── Semester actions (hooks must be before any early returns) ─
+  const updateSemester = useCallback(updated =>
+    setSemesters(p => p.map(s => s.id === updated.id ? updated : s)), []);
+
   // ── Not logged in ─────────────────────────────────────────────
   if (!user) return <AuthPage onAuth={handleAuth} />;
 
@@ -203,9 +207,6 @@ function AuthenticatedApp() {
     setActiveSemId(newSem.id);
     setView('semester');
   };
-
-  const updateSemester = useCallback(updated =>
-    setSemesters(p => p.map(s => s.id === updated.id ? updated : s)), []);
 
   const deleteSemester = id => {
     if (semesters.length === 1) return;
